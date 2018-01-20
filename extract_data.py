@@ -32,7 +32,7 @@ def get_words():
             splitted = match.group().split(',')[2:4]
 
             if len(splitted) > 1:
-                word = np.array([letter for letter in padding(bytes(splitted[0].strip('\''), 'utf-8'), 30)])
+                word = np.array([letter for letter in padding(bytes(splitted[0].strip('\''), 'utf-8'), 15)])
 
                 if splitted[1] == '\'SUB:NOM:SIN:MAS\'':
                     categorized_words.append(np.array([word, CONST_MAS]))
@@ -44,6 +44,10 @@ def get_words():
                     categorized_words.append(np.array([word, CONST_NEU]))
 
     return np.array(categorized_words)
+
+
+def byte_to_string(words=np.array([])):
+    return [''.join(bytes(w.tolist()).decode('utf-8')) for w in words]
 
 
 def padding(word=bytes(), padding=30):
