@@ -1,4 +1,6 @@
 import re
+import numpy as np
+
 
 ROOT_PATH = './data/'
 FILENAME = 'nomen.sql'
@@ -6,51 +8,54 @@ NEUTRAL = 'neutral.txt'
 FEM = 'feminine.txt'
 MASC = 'masculine.txt'
 
+CONST_MAS = 0
+CONST_NEU = 1
+CONST_FEM = 2
+
 TRAINING = ROOT_PATH + 'training/'
 VALIDATION = ROOT_PATH + 'validation/'
 
-with open(ROOT_PATH + FILENAME, 'r') as all_words, \
-    open(TRAINING + NEUTRAL, 'w') as training_neutrals, \
-    open(TRAINING + MASC, 'w') as training_masculines, \
-    open(TRAINING + FEM, 'w') as training_feminine, \
-    open(VALIDATION + NEUTRAL, 'w') as validation_neutrals, \
-    open(VALIDATION + MASC, 'w') as validation_masculines, \
-    open(VALIDATION + FEM, 'w') as validation_feminine:
+def get_words():
+    """
 
-    read_data = all_words.read()
+    :return: feminine, masculine, neutral
+    """
+    with open(ROOT_PATH + FILENAME, 'r') as all_words:
 
-    m = re.finditer('\(.*?\)', read_data)
+        read_data = all_words.read()
 
-    count_masculine = 0
-    count_feminine = 0
-    count_neutral = 0
+        m = re.finditer('\(.*?\)', read_data)
 
-    for match in m:
-        splitted = match.group().split(',')[2:4]
+        categorized_words = []
 
-        if len(splitted) > 1:
-            word = splitted[0].strip('\'') + '\n'
+        for match in m:
+            splitted = match.group().split(',')[2:4]
 
-            if splitted[1] == '\'SUB:NOM:SIN:MAS\'':
-                count_masculine += 1
+            if len(splitted) > 1:
+                word = np.array([letter for letter in padding(bytes(splitted[0].strip('\''), 'utf-8'), 30)])
 
-                if count_masculine % 20 == 0:
-                    validation_masculines.write(word)
-                else:
-                    training_masculines.write(word)
+                if splitted[1] == '\'SUB:NOM:SIN:MAS\'':
+                    categorized_words.append(np.array([word, CONST_MAS]))
 
-            if splitted[1] == '\'SUB:NOM:SIN:FEM\'':
-                count_feminine += 1
+                if splitted[1] == '\'SUB:NOM:SIN:FEM\'':
+                    categorized_words.append(np.array([word, CONST_FEM]))
 
-                if count_feminine % 20 == 0:
-                    validation_feminine.write(word)
-                else:
-                    training_feminine.write(word)
+                if splitted[1] == '\'SUB:NOM:SIN:NEU\'':
+                    categorized_words.append(np.array([word, CONST_NEU]))
 
-            if splitted[1] == '\'SUB:NOM:SIN:NEU\'':
-                count_neutral += 1
+    return np.array(categorized_words)
 
-                if count_neutral % 20 == 0:
-                    validation_neutrals.write(word)
-                else:
-                    training_neutrals.write(word)
+
+def padding(word=bytes(), padding=30):
+    """
+
+    :param word: word
+    :param padding: padding to apply
+    :return: a list of words with given padding
+    """
+    return word[:padding].rjust(padding, bytes('_', 'ascii'))
+
+
+def get_sets(words=np.array([]), training=10):
+    size_training = int(len(words) / 10 * training)
+    return words[:size_training], words[size_training:]
