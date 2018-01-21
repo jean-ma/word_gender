@@ -5,31 +5,14 @@ from keras.optimizers import SGD
 
 from matplotlib import pyplot
 
-from numpy.random import shuffle
-from keras import metrics
-
-from extract_data import get_words
+from extract_data import get_data_sets
 from extract_data import byte_to_string
-from extract_data import get_sets
 
-import numpy as np
+PADDING = 20
 
-PADDING = 15
+TRAINING_PERCENTAGE = 0.8
 
-TRAINING = 8  # 8 out of 10 go to the training set, the rest to the test set
-
-words = get_words()
-shuffle(words)
-
-(xy_train, xy_test) = get_sets(words, TRAINING)
-(x_train, y_train) = zip(*xy_train)
-x_train = np.array(x_train)
-y_train = keras.utils.to_categorical(y_train, 3)
-#y_train = keras.utils.to_categorical(np.random.randint(3, size=(len(x_train), 1)), num_classes=3)
-
-(x_test, y_test) = zip(*xy_test)
-x_test = np.array(x_test)
-y_test = keras.utils.to_categorical(y_test, 3)
+(x_train, y_train), (x_test, y_test) = get_data_sets(PADDING, TRAINING_PERCENTAGE)
 
 model = Sequential()
 
