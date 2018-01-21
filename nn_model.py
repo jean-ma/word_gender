@@ -1,6 +1,6 @@
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Conv1D
-from keras.optimizers import SGD
+from keras.optimizers import SGD, RMSprop
 
 from matplotlib import pyplot
 
@@ -15,15 +15,15 @@ TRAINING_PERCENTAGE = 0.8
 
 model = Sequential()
 
-model.add(Dense(5, activation='sigmoid', input_dim=PADDING))
+model.add(Dense(20, activation='sigmoid', input_dim=PADDING))
 model.add(Dropout(0.1))
-model.add(Dense(5, activation='sigmoid'))
+model.add(Dense(20, activation='sigmoid', input_dim=PADDING))
 model.add(Dropout(0.1))
 model.add(Dense(3, activation='softmax'))
 
-sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+rmsprop = RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0)
 model.compile(loss='categorical_crossentropy',
-              optimizer=sgd,
+              optimizer=rmsprop,
               metrics=['acc', 'mean_squared_error'])
 
 history = model.fit(x_train, y_train,
