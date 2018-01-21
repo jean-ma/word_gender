@@ -1,4 +1,3 @@
-import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Conv1D
 from keras.optimizers import SGD
@@ -16,10 +15,10 @@ TRAINING_PERCENTAGE = 0.8
 
 model = Sequential()
 
-model.add(Dense(64, activation='relu', input_dim=PADDING))
-model.add(Dropout(0.5))
-model.add(Dense(64, activation='relu'))
-model.add(Dropout(0.5))
+model.add(Dense(5, activation='sigmoid', input_dim=PADDING))
+model.add(Dropout(0.1))
+model.add(Dense(5, activation='sigmoid'))
+model.add(Dropout(0.1))
 model.add(Dense(3, activation='softmax'))
 
 sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
@@ -29,9 +28,9 @@ model.compile(loss='categorical_crossentropy',
 
 history = model.fit(x_train, y_train,
           epochs=20,
-          batch_size=10)
+          batch_size=200)
 
-score = model.evaluate(x_test, y_test, batch_size=10)
+score = model.evaluate(x_test, y_test, batch_size=200)
 
 prediction = model.predict(x_test[:100])
 
