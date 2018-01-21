@@ -15,9 +15,9 @@ TRAINING_PERCENTAGE = 0.8
 
 model = Sequential()
 
-model.add(Dense(80, activation='sigmoid', input_dim=PADDING))
+model.add(Dense(150, activation='sigmoid', input_dim=PADDING))
 model.add(Dropout(0.1))
-model.add(Dense(80, activation='sigmoid'))
+model.add(Dense(150, activation='sigmoid'))
 model.add(Dropout(0.1))
 model.add(Dense(3, activation='softmax'))
 
@@ -27,7 +27,7 @@ model.compile(loss='categorical_crossentropy',
               metrics=['acc', 'mean_squared_error'])
 
 history = model.fit(x_train, y_train,
-          epochs=20,
+          epochs=500,
           batch_size=150)
 
 score = model.evaluate(x_test, y_test, batch_size=150)
