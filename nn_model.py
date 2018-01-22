@@ -1,8 +1,6 @@
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Conv1D
-from keras.optimizers import SGD, RMSprop
-
-from matplotlib import pyplot
+from keras.layers import Dense, Dropout
+from keras.optimizers import RMSprop
 
 from extract_data import get_data_sets
 from extract_data import generate_report
