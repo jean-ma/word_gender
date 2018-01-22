@@ -2,10 +2,10 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras.optimizers import RMSprop
 
-from extract_data import get_data_sets
-from extract_data import generate_report
-from extract_data import generate_fit_evolution_figure
-from extract_data import new_report_directory
+from data_utils import get_data_sets
+from data_utils import generate_report
+from data_utils import generate_fit_evolution_figure
+from data_utils import new_report_directory
 
 TRAINING_PERCENTAGE = 0.8
 

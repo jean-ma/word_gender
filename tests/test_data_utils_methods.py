@@ -2,17 +2,17 @@ import unittest
 
 import numpy as np
 
-from extract_data import clean_x_test
-from extract_data import clean_y_test
-from extract_data import get_confusion_matrix
-from extract_data import clean_prediction
+from data_utils import clean_x_test
+from data_utils import clean_y_test
+from data_utils import get_confusion_matrix
+from data_utils import clean_prediction
 
 
-class TestStringMethods(unittest.TestCase):
+class TestDataUtilsMethods(unittest.TestCase):
     def test_clean_x_test(self):
         binary_words = np.array([
-            bytes('__Hallo', 'utf-8'),
-            bytes('_Mensch', 'utf-8')
+            bytes('000Hallo', 'utf-8'),
+            bytes('00Mensch', 'utf-8')
         ])
 
         assert (clean_x_test(binary_words) == ['Hallo', 'Mensch'])
@@ -36,10 +36,10 @@ class TestStringMethods(unittest.TestCase):
         matrix = get_confusion_matrix(actual_y, predicted_y)
 
         expected_matrix = [
-            ['',       'male', 'neutral', 'female'],
-            ['male',    0,      0,         1],
-            ['neutral', 0,      0,         0],
-            ['female',  0,      0,         1]]
+            ['True label\\prediction label',       'male', 'neutral', 'female'],
+            ['                        male',    0,      0,         1],
+            ['                     neutral', 0,      0,         0],
+            ['                      female',  0,      0,         1]]
 
         assert matrix == expected_matrix
 
@@ -49,7 +49,7 @@ class TestStringMethods(unittest.TestCase):
             [0.1, 0.3, 0.6]
         ])
 
-        assert clean_prediction(prediction) == ['neutral', 'feminine']
+        assert clean_prediction(prediction) == ['neutral', 'female']
 
 if __name__ == '__main__':
     unittest.main()

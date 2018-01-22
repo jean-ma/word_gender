@@ -105,7 +105,7 @@ def clean_x_test(x_test=np.array([])):
         for w in words:
             yield ''.join(bytes(w.tolist()).decode('utf-8'))
 
-    return [w.strip('_') for w in byte_to_string(x_test)]
+    return [w.strip('0') for w in byte_to_string(x_test)]
 
 
 def clean_y_test(y_test=np.array([])):
@@ -134,22 +134,22 @@ def generate_report(test_score, x_test, y_test, prediction, directory_name):
     with open(report_filename, 'w') as report:
         accuracy = 1
         report.write('Overall accuracy: {}\n'.format(test_score[accuracy]))
-        report.write('Confusion matrix: ')
+        report.write('Confusion matrix: \n')
 
-        [report.write('{}, {}, {}, {}'.format(*row)) for row in confusion_mat]
+        [report.write('{}, {}, {}, {}\n'.format(*row)) for row in confusion_mat]
 
         [
-            report.write(','.join(pred) + "{};{}\n".format(x, y))
+            report.write(pred + ';{};{}\n'.format(x, y))
             for pred, x, y in zip(cleaned_prediction, cleaned_x_test, cleaned_y_test)
         ]
 
 
 def get_confusion_matrix(actual=np.array([]), predicted=np.array([])):
-    conf = confusion_matrix(actual, predicted, labels=["male", "neutral", "female"]).tolist()
-    return [['', 'male', 'neutral', 'female'],
-            ['male'] + conf[0],
-            ['neutral'] + conf[1],
-            ['female'] + conf[2]]
+    conf = confusion_matrix(actual, predicted, labels=['male', 'neutral', 'female']).tolist()
+    return [['True label\\prediction label', 'male', 'neutral', 'female'],
+            ['                        male'] + conf[0],
+            ['                     neutral'] + conf[1],
+            ['                      female'] + conf[2]]
 
 
 def generate_fit_evolution_figure(fit_history, directory_name):
