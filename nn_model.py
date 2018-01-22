@@ -36,6 +36,8 @@ print('Report creation...')
 
 dir_name = new_report_directory()
 
+model.save(dir_name + 'model.h5')
+
 generate_report(test_score, x_test, y_test, prediction, dir_name)
 
 generate_fit_evolution_figure(fit_history, dir_name)

@@ -2,3 +2,4 @@ keras
 theano
 matplotlib
 sklearn
+h5py
