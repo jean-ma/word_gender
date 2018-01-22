@@ -154,6 +154,9 @@ def get_confusion_matrix(actual=np.array([]), predicted=np.array([])):
 
 def generate_fit_evolution_figure(fit_history, directory_name):
     filename = directory_name + FIT_HISTORY_FILENAME
+    pyplot.title('Prediction Accuracy over epochs')
+    pyplot.xlabel('Epochs')
+    pyplot.ylabel('Accuracy')
     pyplot.plot(fit_history.history['acc'])
     pyplot.savefig(filename)
 
