@@ -1,6 +1,7 @@
 from keras.models import Sequential
-from keras.layers import Dense, Dropout
+from keras.layers import Dense, Dropout, Conv1D, GlobalAveragePooling1D
 from keras.optimizers import RMSprop
+import numpy as np
 
 from data_utils import get_data_sets
 from data_utils import generate_report
@@ -13,11 +14,12 @@ TRAINING_PERCENTAGE = 0.8
 
 model = Sequential()
 
-model.add(Dense(150, activation='sigmoid', input_dim=padding))
+model.add(Conv1D(20, 4, strides=1, padding='valid', input_shape=(padding, 1), name='conv 1'))
 model.add(Dropout(0.1))
-model.add(Dense(150, activation='sigmoid'))
+model.add(Dense(20, activation='sigmoid', name='dense 1'))
+model.add(GlobalAveragePooling1D())
 model.add(Dropout(0.1))
-model.add(Dense(3, activation='softmax'))
+model.add(Dense(3, activation='softmax', name='dense 2'))
 
 rmsprop = RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0)
 model.compile(loss='categorical_crossentropy',
@@ -25,7 +27,7 @@ model.compile(loss='categorical_crossentropy',
               metrics=['acc', 'mean_squared_error'])
 
 fit_history = model.fit(x_train, y_train,
-                        epochs=500,
+                        epochs=1,
                         batch_size=150)
 
 test_score = model.evaluate(x_test, y_test, batch_size=150)

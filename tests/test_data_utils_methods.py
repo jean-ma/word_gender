@@ -10,12 +10,14 @@ from data_utils import clean_prediction
 
 class TestDataUtilsMethods(unittest.TestCase):
     def test_clean_x_test(self):
+        size_max = 10
         binary_words = np.array([
-            bytes('000Hallo', 'utf-8'),
-            bytes('00Mensch', 'utf-8')
+            np.reshape(np.array(list(bytes('Hallo', 'utf-8').zfill(size_max))), (1, size_max)),
+            np.reshape(np.array(list(bytes('Mensch', 'utf-8').zfill(size_max))), (1, size_max))
         ])
-
-        assert (clean_x_test(binary_words) == ['Hallo', 'Mensch'])
+        print(binary_words)
+        print(clean_x_test(binary_words))
+        assert clean_x_test(binary_words) == ['Hallo', 'Mensch']
 
     def test_clean_y_test(self):
         triples = np.array([

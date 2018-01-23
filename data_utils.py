@@ -69,7 +69,7 @@ def split_sets(words=np.array([]), training=0.8):
 def get_data_sets(training_percentage=0.8):
     (word_gender, size_max) = get_words()
     word_gender = np.array([
-        np.array([np.array(list(w.zfill(size_max))), gender])
+        np.array([np.reshape(np.array(list(w.zfill(size_max))), (size_max, 1)), gender])
         for w, gender in word_gender])
     shuffle(word_gender)
 
@@ -103,6 +103,7 @@ def clean_prediction(predictions=np.array([])):
 def clean_x_test(x_test=np.array([])):
     def byte_to_string(words):
         for w in words:
+            ##np.reshape(np.array(list(w.zfill(size_max))), (size_max, 1))
             yield ''.join(bytes(w.tolist()).decode('utf-8'))
 
     return [w.strip('0') for w in byte_to_string(x_test)]
