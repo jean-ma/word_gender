@@ -12,8 +12,8 @@ class TestDataUtilsMethods(unittest.TestCase):
     def test_clean_x_test(self):
         size_max = 10
         binary_words = np.array([
-            np.reshape(np.array(list(bytes('Hallo', 'utf-8').zfill(size_max))), (1, size_max)),
-            np.reshape(np.array(list(bytes('Mensch', 'utf-8').zfill(size_max))), (1, size_max))
+            np.reshape(np.array(list(bytes('Hallo', 'utf-8').zfill(size_max))), (size_max, 1)),
+            np.reshape(np.array(list(bytes('Mensch', 'utf-8').zfill(size_max))), (size_max, 1))
         ])
         print(binary_words)
         print(clean_x_test(binary_words))

@@ -103,8 +103,8 @@ def clean_prediction(predictions=np.array([])):
 def clean_x_test(x_test=np.array([])):
     def byte_to_string(words):
         for w in words:
-            ##np.reshape(np.array(list(w.zfill(size_max))), (size_max, 1))
-            yield ''.join(bytes(w.tolist()).decode('utf-8'))
+            flattened_integers = [val[0] for val in w.tolist()]
+            yield ''.join(bytes(flattened_integers).decode('utf-8'))
 
     return [w.strip('0') for w in byte_to_string(x_test)]
 
