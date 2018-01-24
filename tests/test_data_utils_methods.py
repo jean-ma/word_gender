@@ -6,6 +6,7 @@ from data_utils import clean_x_test
 from data_utils import clean_y_test
 from data_utils import get_confusion_matrix
 from data_utils import clean_prediction
+from data_utils import boost_minorities
 
 
 class TestDataUtilsMethods(unittest.TestCase):
@@ -50,6 +51,21 @@ class TestDataUtilsMethods(unittest.TestCase):
         ])
 
         assert clean_prediction(prediction) == ['neutral', 'female']
+
+    def test_boost_minorities(self):
+        word = np.array(list(bytes('000Hallo', 'utf-8')))
+        xy_training = np.array([
+            np.array([word, np.array([1])]),
+            np.array([word, np.array([2])]),
+            np.array([word, np.array([0])]),
+            np.array([word, np.array([0])]),
+            np.array([word, np.array([0])]),
+            np.array([word, np.array([2])])
+        ])
+
+        boost_minorities(xy_training)
+
+        assert len(boost_minorities(xy_training)) == 9
 
 if __name__ == '__main__':
     unittest.main()

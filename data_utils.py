@@ -74,6 +74,7 @@ def get_data_sets(training_percentage=0.8):
     shuffle(word_gender)
 
     (xy_train, xy_test) = split_sets(word_gender, training_percentage)
+    xy_train = boost_minorities(xy_train)
     (x_train, y_train) = zip(*xy_train)
     x_train = np.array(x_train)
     y_train = keras.utils.to_categorical(y_train, 3)
@@ -83,6 +84,32 @@ def get_data_sets(training_percentage=0.8):
     y_test = keras.utils.to_categorical(y_test, 3)
 
     return (x_train, y_train), (x_test, y_test), size_max
+
+
+def boost_minorities(xy_train=np.array([])):
+    male = []
+    female = []
+    neutral = []
+
+    for (x_train, y_train) in xy_train:
+        if y_train == CONST_MAS:
+            male.append((x_train, y_train))
+        if y_train == CONST_NEU:
+            neutral.append((x_train, y_train))
+        if y_train == CONST_FEM:
+            female.append((x_train, y_train))
+
+    max_size = max([len(male), len(female), len(neutral)])
+
+    for gender in [male, female, neutral]:
+        while len(gender) < max_size:
+            diff_size = max_size - len(gender)
+            gender += gender[:diff_size]
+
+    completed = np.array(male + female + neutral)
+    np.random.shuffle(completed)
+
+    return completed
 
 
 def clean_prediction(predictions=np.array([])):
