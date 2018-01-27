@@ -1,11 +1,24 @@
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 from keras.layers import Dense, Dropout
 from keras.optimizers import RMSprop
+
+import sys
 
 from data_utils import get_data_sets
 from data_utils import generate_report
 from data_utils import generate_fit_evolution_figure
 from data_utils import new_report_directory
+from data_utils import interactive_test
+
+
+if len(sys.argv) == 2:
+    model_relative_path = sys.argv[1]
+
+    model = load_model(model_relative_path)
+
+    interactive_test(model)
+
+    sys.exit(0)
 
 TRAINING_PERCENTAGE = 0.8
 
@@ -25,7 +38,7 @@ model.compile(loss='categorical_crossentropy',
               metrics=['acc', 'mean_squared_error'])
 
 fit_history = model.fit(x_train, y_train,
-                        epochs=5,
+                        epochs=500,
                         batch_size=150)
 
 test_score = model.evaluate(x_test, y_test, batch_size=150)

@@ -70,7 +70,7 @@ def split_sets(words=np.array([]), training=0.8):
 def get_data_sets(training_percentage=0.8):
     (word_gender, size_max) = get_words()
     word_gender = np.array([
-        np.array([np.array(list(w.zfill(size_max))), gender])
+        np.array([format_row(w, size_max), gender])
         for w, gender in word_gender])
     shuffle(word_gender)
 
@@ -170,3 +170,29 @@ def new_report_directory():
     dir_name = ROOT_PATH + 'report_' + now + '/'
     os.mkdir(dir_name)
     return dir_name
+
+
+def format_row(row, size: int):
+    if size is None:
+        size = len(row)
+
+    return np.array(list(row.zfill(size)))
+
+
+def interactive_test(model):
+    input_lenght = model.input_shape[1]
+    print('type "q" to quit')
+
+    testing_word = input()
+    while testing_word != "q":
+        formatted_x = np.array([format_row(bytes(testing_word, 'utf-8'), input_lenght)])
+
+        prediction = model.predict(formatted_x)
+
+        first_column = clean_prediction(np.array([[1, 0, 0]]))
+        second_column = clean_prediction(np.array([[0, 1, 0]]))
+        third_column = clean_prediction(np.array([[0, 0, 1]]))
+
+        print('{} {} {}'.format(first_column, second_column, third_column))
+        print('{} ({})'.format(str(prediction[0]), str(clean_prediction(prediction)[0])))
+        testing_word = input()
