@@ -4,6 +4,7 @@ from matplotlib import pyplot
 from numpy.random import shuffle
 from datetime import datetime
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import f1_score
 import os
 
 import keras
@@ -131,9 +132,12 @@ def generate_report(test_score, x_test, y_test, prediction, directory_name):
 
     confusion_mat = get_confusion_matrix(np.array(cleaned_y_test), np.array(cleaned_prediction))
 
+    f1 = f1_score(np.array(cleaned_y_test), np.array(cleaned_prediction), average='micro')
+
     with open(report_filename, 'w') as report:
         accuracy = 1
         report.write('Overall accuracy: {}\n'.format(test_score[accuracy]))
+        report.write('F1 score: {}\n'.format(f1))
         report.write('Confusion matrix: \n')
 
         [report.write('{}, {}, {}, {}\n'.format(*row)) for row in confusion_mat]
