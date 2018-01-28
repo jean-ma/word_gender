@@ -6,7 +6,6 @@ from datetime import datetime
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import f1_score
 from keras.preprocessing.sequence import pad_sequences
-from keras.preprocessing.text import one_hot
 import os
 
 import keras
