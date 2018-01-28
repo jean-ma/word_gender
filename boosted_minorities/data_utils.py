@@ -4,6 +4,8 @@ from matplotlib import pyplot
 from numpy.random import shuffle
 from datetime import datetime
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import f1_score
+from keras.preprocessing.sequence import pad_sequences
 import os
 
 import keras
@@ -14,6 +16,9 @@ FILENAME = 'nomen.sql'
 NEUTRAL = 'neutral.txt'
 FEM = 'female.txt'
 MASC = 'male.txt'
+
+german_alphabet = 'abcdefghijklmnopqrstuvwxyzäöüß'
+letter_to_number = dict([(letter, idx) for letter, idx in zip(german_alphabet, range(1, len(german_alphabet)+1))])
 
 REPORT_FILENAME = 'report.txt'
 
@@ -45,18 +50,21 @@ def get_words():
             splitted = match.group().split(',')[2:4]
 
             if len(splitted) > 1:
-                bytes_word = bytes(splitted[0].strip('\''), 'utf-8')
+                german_word = splitted[0].strip('\'').lower()
 
-                size_max = max([size_max, len(bytes_word)])
+                exotic_word = len([True for l in german_word if l not in german_alphabet]) > 0
 
-                if splitted[1] == '\'SUB:NOM:SIN:MAS\'':
-                    categorized_words.append((bytes_word, CONST_MAS))
+                if not exotic_word:
+                    size_max = max([size_max, len(german_word)])
 
-                if splitted[1] == '\'SUB:NOM:SIN:FEM\'':
-                    categorized_words.append((bytes_word, CONST_FEM))
+                    if splitted[1] == '\'SUB:NOM:SIN:MAS\'':
+                        categorized_words.append((german_word, CONST_MAS))
 
-                if splitted[1] == '\'SUB:NOM:SIN:NEU\'':
-                    categorized_words.append((bytes_word, CONST_NEU))
+                    if splitted[1] == '\'SUB:NOM:SIN:FEM\'':
+                        categorized_words.append((german_word, CONST_FEM))
+
+                    if splitted[1] == '\'SUB:NOM:SIN:NEU\'':
+                        categorized_words.append((german_word, CONST_NEU))
 
     return categorized_words, size_max
 
@@ -69,18 +77,18 @@ def split_sets(words=np.array([]), training=0.8):
 def get_data_sets(training_percentage=0.8):
     (word_gender, size_max) = get_words()
     word_gender = np.array([
-        np.array([np.array(list(w.zfill(size_max))), gender])
+        np.array([format_row(w), gender])
         for w, gender in word_gender])
     shuffle(word_gender)
 
     (xy_train, xy_test) = split_sets(word_gender, training_percentage)
     xy_train = boost_minorities(xy_train)
     (x_train, y_train) = zip(*xy_train)
-    x_train = np.array(x_train)
+    x_train = pad_sequences(np.array(x_train), maxlen=size_max)
     y_train = keras.utils.to_categorical(y_train, 3)
 
     (x_test, y_test) = zip(*xy_test)
-    x_test = np.array(x_test)
+    x_test = pad_sequences(np.array(x_test), maxlen=size_max)
     y_test = keras.utils.to_categorical(y_test, 3)
 
     return (x_train, y_train), (x_test, y_test), size_max
@@ -101,12 +109,14 @@ def boost_minorities(xy_train=np.array([])):
 
     max_size = max([len(male), len(female), len(neutral)])
 
+    together = []
     for gender in [male, female, neutral]:
         while len(gender) < max_size:
             diff_size = max_size - len(gender)
             gender += gender[:diff_size]
+        together += gender
 
-    completed = np.array(male + female + neutral)
+    completed = np.array(together)
     np.random.shuffle(completed)
 
     return completed
@@ -130,9 +140,9 @@ def clean_prediction(predictions=np.array([])):
 def clean_x_test(x_test=np.array([])):
     def byte_to_string(words):
         for w in words:
-            yield ''.join(bytes(w.tolist()).decode('utf-8'))
+            yield ''.join([german_alphabet[number-1] for number in w.tolist() if number > 0])
 
-    return [w.strip('0') for w in byte_to_string(x_test)]
+    return [w for w in byte_to_string(x_test)]
 
 
 def clean_y_test(y_test=np.array([])):
@@ -158,9 +168,12 @@ def generate_report(test_score, x_test, y_test, prediction, directory_name):
 
     confusion_mat = get_confusion_matrix(np.array(cleaned_y_test), np.array(cleaned_prediction))
 
+    f1 = f1_score(np.array(cleaned_y_test), np.array(cleaned_prediction), average='micro')
+
     with open(report_filename, 'w') as report:
         accuracy = 1
         report.write('Overall accuracy: {}\n'.format(test_score[accuracy]))
+        report.write('F1 score: {}\n'.format(f1))
         report.write('Confusion matrix: \n')
 
         [report.write('{}, {}, {}, {}\n'.format(*row)) for row in confusion_mat]
@@ -193,3 +206,25 @@ def new_report_directory():
     dir_name = ROOT_PATH + 'report_' + now + '/'
     os.mkdir(dir_name)
     return dir_name
+
+
+def format_row(row):
+    return np.array([letter_to_number[letter] for letter in row])
+
+
+def interactive_test(model):
+    print('type "q" to quit')
+
+    testing_word = input()
+    while testing_word != "q":
+        formatted_x = np.array([format_row(testing_word)])
+
+        prediction = model.predict(formatted_x)
+
+        first_column = clean_prediction(np.array([[1, 0, 0]]))
+        second_column = clean_prediction(np.array([[0, 1, 0]]))
+        third_column = clean_prediction(np.array([[0, 0, 1]]))
+
+        print('{} {} {}'.format(first_column, second_column, third_column))
+        print('{} ({})'.format(str(prediction[0]), str(clean_prediction(prediction)[0])))
+        testing_word = input()
