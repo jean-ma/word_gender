@@ -5,6 +5,7 @@ from numpy.random import shuffle
 from datetime import datetime
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import f1_score
+from keras.preprocessing.sequence import pad_sequences
 import os
 
 import keras
@@ -15,6 +16,9 @@ FILENAME = 'nomen.sql'
 NEUTRAL = 'neutral.txt'
 FEM = 'female.txt'
 MASC = 'male.txt'
+
+german_alphabet = 'abcdefghijklmnopqrstuvwxyzäöüß'
+letter_to_number = dict([(letter, idx) for letter, idx in zip(german_alphabet, range(1, len(german_alphabet)+1))])
 
 REPORT_FILENAME = 'report.txt'
 
@@ -46,18 +50,21 @@ def get_words():
             splitted = match.group().split(',')[2:4]
 
             if len(splitted) > 1:
-                bytes_word = bytes(splitted[0].strip('\''), 'utf-8')
+                german_word = splitted[0].strip('\'').lower()
 
-                size_max = max([size_max, len(bytes_word)])
+                exotic_word = len([True for l in german_word if l not in german_alphabet]) > 0
 
-                if splitted[1] == '\'SUB:NOM:SIN:MAS\'':
-                    categorized_words.append((bytes_word, CONST_MAS))
+                if not exotic_word:
+                    size_max = max([size_max, len(german_word)])
 
-                if splitted[1] == '\'SUB:NOM:SIN:FEM\'':
-                    categorized_words.append((bytes_word, CONST_FEM))
+                    if splitted[1] == '\'SUB:NOM:SIN:MAS\'':
+                        categorized_words.append((german_word, CONST_MAS))
 
-                if splitted[1] == '\'SUB:NOM:SIN:NEU\'':
-                    categorized_words.append((bytes_word, CONST_NEU))
+                    if splitted[1] == '\'SUB:NOM:SIN:FEM\'':
+                        categorized_words.append((german_word, CONST_FEM))
+
+                    if splitted[1] == '\'SUB:NOM:SIN:NEU\'':
+                        categorized_words.append((german_word, CONST_NEU))
 
     return categorized_words, size_max
 
@@ -70,17 +77,17 @@ def split_sets(words=np.array([]), training=0.8):
 def get_data_sets(training_percentage=0.8):
     (word_gender, size_max) = get_words()
     word_gender = np.array([
-        np.array([format_row(w, size_max), gender])
+        np.array([format_row(w), gender])
         for w, gender in word_gender])
     shuffle(word_gender)
 
     (xy_train, xy_test) = split_sets(word_gender, training_percentage)
     (x_train, y_train) = zip(*xy_train)
-    x_train = np.array(x_train)
+    x_train = pad_sequences(np.array(x_train), maxlen=size_max)
     y_train = keras.utils.to_categorical(y_train, 3)
 
     (x_test, y_test) = zip(*xy_test)
-    x_test = np.array(x_test)
+    x_test = pad_sequences(np.array(x_test), maxlen=size_max)
     y_test = keras.utils.to_categorical(y_test, 3)
 
     return (x_train, y_train), (x_test, y_test), size_max
@@ -104,9 +111,9 @@ def clean_prediction(predictions=np.array([])):
 def clean_x_test(x_test=np.array([])):
     def byte_to_string(words):
         for w in words:
-            yield ''.join(bytes(w.tolist()).decode('utf-8'))
+            yield ''.join([german_alphabet[number-1] for number in w.tolist() if number > 0])
 
-    return [w.strip('0') for w in byte_to_string(x_test)]
+    return [w for w in byte_to_string(x_test)]
 
 
 def clean_y_test(y_test=np.array([])):
@@ -172,11 +179,8 @@ def new_report_directory():
     return dir_name
 
 
-def format_row(row, size: int):
-    if size is None:
-        size = len(row)
-
-    return np.array(list(row.zfill(size)))
+def format_row(row):
+    return np.array([letter_to_number[letter] for letter in row])
 
 
 def interactive_test(model):
@@ -185,7 +189,7 @@ def interactive_test(model):
 
     testing_word = input()
     while testing_word != "q":
-        formatted_x = np.array([format_row(bytes(testing_word, 'utf-8'), input_lenght)])
+        formatted_x = np.array([format_row(testing_word)])
 
         prediction = model.predict(formatted_x)
 
