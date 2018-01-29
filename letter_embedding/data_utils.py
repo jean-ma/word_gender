@@ -81,11 +81,11 @@ def get_data_sets(training_percentage=0.8):
 
     (xy_train, xy_test) = split_sets(word_gender, training_percentage)
     (x_train, y_train) = zip(*xy_train)
-    x_train = pad_sequences(np.array(x_train), maxlen=33)
+    x_train = pad_sequences(np.array(x_train), maxlen=size_max)
     y_train = keras.utils.to_categorical(y_train, 3)
 
     (x_test, y_test) = zip(*xy_test)
-    x_test = pad_sequences(np.array(x_test), maxlen=33)
+    x_test = pad_sequences(np.array(x_test), maxlen=size_max)
     y_test = keras.utils.to_categorical(y_test, 3)
 
     return (x_train, y_train), (x_test, y_test), size_max
