@@ -213,11 +213,13 @@ def format_row(row):
 
 
 def interactive_test(model):
+    _, max_length = model.input_shape
+
     print('type "q" to quit')
 
     testing_word = input()
     while testing_word != "q":
-        formatted_x = np.array([format_row(testing_word)])
+        formatted_x = pad_sequences(np.array([format_row(testing_word)]), maxlen=max_length)
 
         prediction = model.predict(formatted_x)
 

@@ -1,5 +1,6 @@
 import re
 import numpy as np
+from keras.models import Sequential
 from matplotlib import pyplot
 from numpy.random import shuffle
 from datetime import datetime
@@ -183,13 +184,13 @@ def format_row(row):
     return np.array([letter_to_number[letter] for letter in row])
 
 
-def interactive_test(model):
-    input_lenght = model.input_shape[1]
+def interactive_test(model=Sequential()):
     print('type "q" to quit')
+    _, max_length = model.input_shape
 
     testing_word = input()
     while testing_word != "q":
-        formatted_x = np.array([format_row(testing_word)])
+        formatted_x = pad_sequences(np.array([format_row(testing_word)]), maxlen=max_length)
 
         prediction = model.predict(formatted_x)
 
